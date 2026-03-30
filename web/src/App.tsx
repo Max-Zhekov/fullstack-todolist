@@ -1,6 +1,7 @@
 import { useState, type ChangeEvent } from "react";
 import type { Task } from "./types/task.type";
 import TaskItem from "./components/Task/TaskItem";
+import styles from "./App.module.scss";
 
 const dummyTodos: Task[] = [
   { id: 1, text: "Изучить Express", completed: false },
@@ -37,11 +38,21 @@ function App() {
 
   function handleDeleteTodo(id: number) {
     setTodos((prev) => prev.filter((todo) => todo.id !== id));
+
+    if (editingTodoId === id) {
+      setEditingTodoId(null);
+      setText("");
+    }
   }
 
   function handleUpdateTodo(id: number, newText: string) {
+    const trimmedText = newText.trim();
+    if (!trimmedText) return;
+
     setTodos((prev) =>
-      prev.map((todo) => (todo.id === id ? { ...todo, text: newText } : todo)),
+      prev.map((todo) =>
+        todo.id === id ? { ...todo, text: trimmedText } : todo,
+      ),
     );
   }
 
@@ -63,33 +74,56 @@ function App() {
   }
 
   return (
-    <div>
-      <form onSubmit={handleAddTodo}>
-        <input
-          type="text"
-          value={text}
-          onChange={handleChangeTextTodo}
-          placeholder={
-            editingTodoId !== null ? "Edit todo..." : "Enter todo..."
-          }
-        />
-        <button type="submit">
-          {editingTodoId !== null ? "Save todo" : "Add todo"}
-        </button>
-      </form>
+    <main className={styles.todo}>
+      <div className={styles.todo__bg}></div>
 
-      <ul>
-        {todos.map((todo) => (
-          <TaskItem
-            key={todo.id}
-            todo={todo}
-            handleDeleteTodo={handleDeleteTodo}
-            handleToggleTodo={handleToggleTodo}
-            handleStartEditTodo={handleStartEditTodo}
+      <section className={styles.todo__card}>
+        <div className={styles.todo__header}>
+          <p className={styles.todo__subtitle}>My tasks</p>
+          <h1 className={styles.todo__title}>Todo List</h1>
+          <p className={styles.todo__description}>
+            Add, edit and manage your tasks in one clean place.
+          </p>
+        </div>
+
+        <form className={styles.todo__form} onSubmit={handleAddTodo}>
+          <input
+            className={styles.todo__input}
+            type="text"
+            value={text}
+            onChange={handleChangeTextTodo}
+            placeholder={
+              editingTodoId !== null
+                ? "Edit your task..."
+                : "Write a new task..."
+            }
           />
-        ))}
-      </ul>
-    </div>
+
+          <button className={styles.todo__submit} type="submit">
+            {editingTodoId !== null ? "Save" : "Add"}
+          </button>
+        </form>
+
+        <div className={styles.todo__meta}>
+          <span className={styles.todo__counter}>Total: {todos.length}</span>
+          <span className={styles.todo__counter}>
+            Done: {todos.filter((todo) => todo.completed).length}
+          </span>
+        </div>
+
+        <ul className={styles.todo__list}>
+          {todos.map((todo) => (
+            <TaskItem
+              key={todo.id}
+              todo={todo}
+              handleDeleteTodo={handleDeleteTodo}
+              handleToggleTodo={handleToggleTodo}
+              handleStartEditTodo={handleStartEditTodo}
+            />
+          ))}
+        </ul>
+      </section>
+    </main>
   );
 }
 
